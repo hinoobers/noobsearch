@@ -14,12 +14,25 @@ module.exports = async function canRead(url) {
     const lines = text.split('\n');
     const path = new URL(url).pathname;
     console.log(`Checking robots.txt for ${url} (path: ${path})`);
-    for(const line of lines) {
+    for(let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const lineAbove = lines[i - 1] || null;
+
         if(line.startsWith("Disallow: ")) {
             const disallowedPath = line.replace("Disallow: ", "").trim();
             if(path.startsWith(disallowedPath)) {
-                console.log(`Access to ${url} is disallowed by robots.txt`);
-                return false;
+                // Are we blocked? or is somebody else blocked
+                if(lineAbove) {
+                    if(lineAbove.startsWith("User-agent: *") || lineAbove.startsWith("User-agent: noobsearch")) {
+                        console.log(`Access to ${url} is disallowed by robots.txt`);
+                        return false;
+                    }
+                } else {
+                    // uhm assume we're blocked
+                    console.log(`Access to ${url} is disallowed by robots.txt`);
+                    return false;
+                }
+
             }
         }
     }
