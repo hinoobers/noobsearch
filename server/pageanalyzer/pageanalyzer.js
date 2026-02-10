@@ -17,7 +17,7 @@ async function analyzePage(url) {
     // Links can have duplicates, or references to this page, so to avoid issues, let's filter
     const uniqueLinks = [...new Set(pageContent.links)].filter(link => link !== url);
     // For website description, we prefer meta description, OR from readable text, lets do like 100 characters
-    return {ok: true, sublinks: uniqueLinks}
+    return {ok: true, sublinks: uniqueLinks, title: pageContent.title, description: pageContent.description, keywords: pageContent.keywords}
 }
 
 module.exports = analyzePage;
