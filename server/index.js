@@ -1,12 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const cors = require("cors");
 
 const {startCrawler} = require("./crawler/crawler");
 const search = require("./search/searchengine");
-const pool = require("./database");
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/search', (req, res) => {
     const query = req.query.q;
