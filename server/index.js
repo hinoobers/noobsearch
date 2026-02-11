@@ -15,9 +15,13 @@ app.get('/search', (req, res) => {
         return res.status(400).json({ok: false, error: "Missing query parameter"});
     }
 
+    const millis = Date.now();
     search(query).then(result => {
-        console.log("Search query:", query, "Results found:", result);
-        res.json(result);
+        if(!result.ok) {
+            return res.status(500).json({ok: false, error: result.error});
+        }
+        const time = Date.now() - millis;
+        res.json({ok: true, results: result.results, time});
     }).catch(error => {
         console.error(error);
         res.status(500).json({ok: false, error: "Search error"});
