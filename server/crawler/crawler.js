@@ -5,13 +5,12 @@
 
 const analyzePage = require("../pageanalyzer/pageanalyzer");
 const pool = require("../database");
-const crawlCache = [];
 
 function startCrawler() {
 
 }
 
-async function crawl(url, ttl) {
+async function crawl(url, ttl, visited = new Set()) {
     if(ttl <= 0) {
         return;
     }
@@ -19,23 +18,19 @@ async function crawl(url, ttl) {
     if(!analysis.ok) {
         return;
     }
-
-    // For each crawler session, let's generate an id
-    let crawlId = Math.random().toString(36).substring(2, 15);
-    while(crawlCache[crawlId]) {
-        // just in case, we want to avoid collisions, but they are very unlikely
-        crawlId = Math.random().toString(36).substring(2, 15);
+    if(visited.has(url)) {
+        return;
     }
-    crawlCache[crawlId] = [];
+    visited.add(url);
 
     const sublinks = analysis.sublinks;
     for(const sublink of sublinks) {
-        if(!sublink.startsWith("http") || crawlCache[crawlId].includes(sublink)) {
+        if(!sublink.startsWith("http")) {
             // some <a tags arent always links
             continue;
         }
-        crawlCache[crawlId].push(sublink);
-        await crawl(sublink, ttl - 1);
+
+        await crawl(sublink, ttl - 1, visited);
     }
 
     // Final step of adding to database, let's double check we have essential data
@@ -44,7 +39,8 @@ async function crawl(url, ttl) {
     }
 
     // Add to database
-    await pool.execute("INSERT INTO pages (url, title, description, keywords, last_updated) VALUES (?, ?, ?, ?, ?)", [url, analysis.title, analysis.description, JSON.stringify(analysis.keywords), new Date()]);
+    // Data might already be there, in that case we need to update it
+    await pool.execute("INSERT INTO pages (url, title, description, keywords, last_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [url, analysis.title, analysis.description, JSON.stringify(analysis.keywords), new Date()]);
 }
 
 module.exports = { startCrawler, crawl };
