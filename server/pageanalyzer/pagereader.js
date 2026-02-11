@@ -59,7 +59,9 @@ async function fetchPageContent(url) {
         }
 
         const keywordExclusion = ["the", "this", "that", "then", "and", "for", "with"]; // These have no use, we want distinctive words, that can we used for search later on
-        const keywords = humanReadableText.split(" ").filter(word => word.replace(/[^a-zA-Z0-9]/g, '').length >= 3).slice(0, 20).filter(word => !keywordExclusion.includes(word.toLowerCase()));
+        let keywords = humanReadableText.split(" ").filter(word => word.replace(/[^a-zA-Z0-9]/g, '').length >= 3).slice(0, 20).filter(word => !keywordExclusion.includes(word.toLowerCase()));
+        // I feel like randomizing the keywords might give a better search, but needs to be tested TODO
+        keywords = keywords.sort(() => 0.5 - Math.random());
 
         return { ok: true, content: html, title, description, links, keywords};
     } catch (error) {
