@@ -5,7 +5,7 @@ const fetchPageContent = require("./pagereader");
 async function analyzePage(url) {
     const canAccess = await canRead(url);
     if(!canAccess) {
-        //return { ok: false, error: "robots.txt disallow"}
+        return { ok: false, error: "robots.txt disallow"}
     }
 
     // Current design: We fetch the HTML, we get sublinks that can also be passed into analyzePage

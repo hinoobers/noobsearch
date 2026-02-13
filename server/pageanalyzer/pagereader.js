@@ -3,7 +3,11 @@ const { Parser } = require('htmlparser2');
 
 async function fetchPageContent(url) {
     try {
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+            }
+        });
         const html = response.data;
         const links = [];
 
@@ -17,15 +21,24 @@ async function fetchPageContent(url) {
         const parser = new Parser({
             onopentag(name, attributes) {
                 if(name === "a") {
-                    // I think it's best to also remove ?parameter from the url
-                    if(attributes.href.startsWith("/")) {
-                        // we need to convert it for our analyzer to work properly
-                        const fullUrl = new URL(attributes.href, url);
-                        links.push(fullUrl.origin + fullUrl.pathname);
-                    } else {
-                        const cleanUrl = new URL(attributes.href);
+                    // I think it's best to also remove ?parameter from the url, avoids duplicates (page buttons for example)
+                    if(attributes.href !== undefined) {
+                        if(attributes.href.startsWith("/")) {
+                            // we need to convert it for our analyzer to work properly
+                            try{
+                                const fullUrl = new URL(attributes.href, url);
+                                links.push(fullUrl.origin + fullUrl.pathname);
+                            } catch (ignored) {
+                                
+                            }
+                        } else {
+                            try {
+                                const cleanUrl = new URL(attributes.href);
+                                links.push(cleanUrl.origin + cleanUrl.pathname);
+                            } catch(ignored) {
 
-                        links.push(cleanUrl.origin + cleanUrl.pathname);
+                            }
+                        }
                     }
                 } else if(name == "meta") {
                     if(attributes.name === "description") {
@@ -69,6 +82,7 @@ async function fetchPageContent(url) {
 
         return { ok: true, content: html, title, description, links, keywords};
     } catch (error) {
+        console.log(error);
         console.error(`Error fetching ${url}:`, error.message);
         return { ok: false, error: error.message };
     }
