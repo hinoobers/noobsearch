@@ -4,11 +4,12 @@ const app = express();
 const cors = require("cors");
 
 const {startCrawler} = require("./crawler/crawler");
-const search = require("./search/searchengine");
+const {search, compareStrings} = require("./search/searchengine");
 
 app.use(express.json());
 app.use(cors());
 
+console.log(compareStrings("a", "A"));
 app.get('/search', (req, res) => {
     const query = req.query.q;
     if(!query) {
@@ -29,6 +30,7 @@ app.get('/search', (req, res) => {
 });
 
 //startCrawler();
+
 
 app.listen(process.env.SERVER_PORT, () => {
     console.log("Search engine is running on port " + process.env.SERVER_PORT)

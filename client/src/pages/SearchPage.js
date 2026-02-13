@@ -7,6 +7,9 @@ const SearchPage = () => {
     const [time, setTime] = useState(null);
 
     const search = (query) => {
+        if(query.trim() === "") {
+            return;
+        }
         fetch(`http://localhost:3001/search?q=${query}`, {
             method: 'GET',
             headers: {
@@ -25,12 +28,13 @@ const SearchPage = () => {
     return (
         <div className='search'>
             <h1>Search Page</h1>
-            <input type="text" placeholder="Search..." onChange={(e) => setQuery(e.target.value)}></input>
+            <input autofocus type="text" placeholder="Search..." onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search(query)}></input>
             <button onClick={() => search(query)}>Search</button>
             <div className='results'>
                 <h2>Results {time !== null && `(in ${time} ms)`}</h2>
                 {results.map((result, index) => (
                     <div key={index} className='result'>
+                        <img src={`https://www.google.com/s2/favicons?domain=${result.url}`} alt="favicon" className='favicon' />
                         <a href={result.url} target="_blank" rel="noopener noreferrer">{result.title}</a>
                     </div>
                 ))}

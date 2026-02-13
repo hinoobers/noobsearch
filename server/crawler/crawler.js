@@ -31,7 +31,7 @@ function startCrawler() {
         }).catch(() => {
             crawling = false;
         });
-    }, 1000 * 60); // every 1 minute
+    }, 1000 * 10); // every 1 minute
 }
 
 async function crawl(url, ttl, visited = new Set()) {

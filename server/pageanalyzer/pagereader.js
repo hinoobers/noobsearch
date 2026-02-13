@@ -17,11 +17,15 @@ async function fetchPageContent(url) {
         const parser = new Parser({
             onopentag(name, attributes) {
                 if(name === "a") {
+                    // I think it's best to also remove ?parameter from the url
                     if(attributes.href.startsWith("/")) {
                         // we need to convert it for our analyzer to work properly
-                        links.push(new URL(attributes.href, url).href);
+                        const fullUrl = new URL(attributes.href, url);
+                        links.push(fullUrl.origin + fullUrl.pathname);
                     } else {
-                        links.push(attributes.href);
+                        const cleanUrl = new URL(attributes.href);
+
+                        links.push(cleanUrl.origin + cleanUrl.pathname);
                     }
                 } else if(name == "meta") {
                     if(attributes.name === "description") {
@@ -58,7 +62,7 @@ async function fetchPageContent(url) {
             description = textContent.substring(0, 100); 
         }
 
-        const keywordExclusion = ["the", "this", "that", "then", "and", "for", "with"]; // These have no use, we want distinctive words, that can we used for search later on
+        const keywordExclusion = ["the", "this", "that", "then", "and", "for", "with", "see", "mis", "tema", "ning", "ja", "tema"]; // These have no use, we want distinctive words, that can we used for search later on
         let keywords = humanReadableText.split(" ").filter(word => word.replace(/[^a-zA-Z0-9]/g, '').length >= 3).slice(0, 20).filter(word => !keywordExclusion.includes(word.toLowerCase()));
         // I feel like randomizing the keywords might give a better search, but needs to be tested TODO
         keywords = keywords.sort(() => 0.5 - Math.random());
