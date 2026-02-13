@@ -27,9 +27,9 @@ const SearchPage = () => {
     }
     return (
         <div className='search'>
-            <h1>Search Page</h1>
+            <h1>noobsearch</h1>
             <input autofocus type="text" placeholder="Search..." onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search(query)}></input>
-            <button onClick={() => search(query)}>Search</button>
+            <button className="search-button" onClick={() => search(query)}>Search</button>
             <div className='results'>
                 <h2>Results {time !== null && `(in ${time} ms)`}</h2>
                 {results.map((result, index) => (
