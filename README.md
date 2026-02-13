@@ -16,7 +16,7 @@ NexusSearch isn't just a wrapper; it's a bottom-up implementation of search tech
 * **The Crawler:** An automated bot that visits domains listed in `domains.txt`.
 * **The Indexer:** A Node.js logic layer that extracts titles, descriptions, and keywords.
 * **The Engine:** A MySQL-powered search utility that ranks results based on metadata relevance.
-* **The UI:** A "Google-minimalist" React application focused on speed and simplicity.
+* **The UI:** React application focused on speed and simplicity.
 
 ---
 
