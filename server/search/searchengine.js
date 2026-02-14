@@ -28,6 +28,16 @@ function compareStrings(a, b) {
     return 1 - distance / Math.max(a.length, b.length);
 }
 
+function getSequenceSimilarity(seq1, seq2) {
+    const lowerSeq1 = seq1.map(s => s.toLowerCase());
+    const lowerSeq2 = seq2.map(s => s.toLowerCase());
+
+    const set2 = new Set(lowerSeq2);
+    const commonCount = lowerSeq1.filter(word => set2.has(word)).length;
+
+    return commonCount / Math.max(lowerSeq1.length, lowerSeq2.length);  
+}
+
 async function search(query) {
     const queryWords = query.split(" ").filter(word => word.replace(/[^a-zA-Z0-9]/g, '').length >= 1).slice(0, 20);
     if(queryWords.length === 0) {
@@ -41,35 +51,58 @@ async function search(query) {
 
     console.log("Searching for:", queryWords);
 
-    const results = await pool.execute("SELECT url, title, description, keywords FROM pages");
+    const results = await pool.execute("SELECT protocol, root_domain, subdomain, path, title, description, keywords FROM pages");
 
-    const final =  results[0].map(row => {
+    const grouped = new Map();
+    for (const row of results[0]) {
         const keywords = JSON.parse(row.keywords);
         const title = row.title || "";
 
-        // Search based on title (priority) + keywords
-        let score = compareStrings(query, title) * 3;
-        // Decrement score based on EXTRA words
-        for(const word of title.split(" ")) {
-            if(!queryWords.includes(word)) {
-                score -= 0.1;
-            }
-        }
+        const titleWords = title.trim().includes(" ") ? title.split(" ") : title.split("_");
+        let score = 0;
 
         for(const word of queryWords) {
-            for(const keyword of keywords) {
-                score = Math.max(score, compareStrings(word, keyword));
+            for(const titleWord of titleWords) {
+                score += compareStrings(word, titleWord);
             }
         }
 
-        // Priotize top level domains, so "arvutitark.ee" will score higher than arvutitark arvutitark.ee/abc/xyz
-        const urlParts = row.url.replace("https://", "").replace("http://", "").split("/");
-        if(urlParts.length === 1) {
-            score += 0.2
+        for (const word of queryWords) {
+            for (const keyword of keywords) {
+                score += (compareStrings(word, keyword) / 4);
+            }
         }
-        return { url: row.url, title, description: row.description, score, query };
-    }).filter(result => result.score > 0.1) // Only return results that have some relevance
-        .sort((a, b) => b.score - a.score);
+
+        const sequenceSimilarity = getSequenceSimilarity(queryWords, titleWords);
+        score += (sequenceSimilarity * 2); 
+
+        const isApex = row.path === "/" && row.subdomain === null;
+
+        if (isApex) {
+            // Todo, apex domains need to be checked, broken atm
+            score += .5;
+        }
+
+        if (score <= 0.1) continue;
+
+        const url = `${row.protocol}://${row.subdomain ? row.subdomain + "." : ""}${row.root_domain}${row.path}`;
+
+        const existing = grouped.get(row.root_domain);
+
+        if (!existing || score > existing.score) {
+            grouped.set(row.root_domain, {
+                url,
+                title,
+                description: row.description,
+                score,
+                query
+            });
+        }
+    }
+    const final = Array.from(grouped.values())
+        .sort((a, b) => b.score - a.score)
+        .filter(result => result.score > 0.1)
+        .slice(0, 20);
     await addToCache(query, final);
     return {ok: true, results: final}
 }

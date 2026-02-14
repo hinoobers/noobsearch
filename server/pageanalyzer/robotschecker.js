@@ -14,27 +14,34 @@ module.exports = async function canRead(url) {
     const lines = text.split('\n');
     const path = new URL(url).pathname;
     console.log(`Checking robots.txt for ${url} (path: ${path})`);
+    const rules = new Map();
+    const globalRules = [];
+    let current = null; // current user agent
     for(let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const lineAbove = lines[i - 1] || null;
-
-        if(line.startsWith("Disallow: ")) {
-            const disallowedPath = line.replace("Disallow: ", "").trim();
-            if(path.startsWith(disallowedPath)) {
-                // Are we blocked? or is somebody else blocked
-                if(lineAbove) {
-                    if(lineAbove.startsWith("User-agent: *") || lineAbove.startsWith("User-agent: noobsearch")) {
-                        console.log(`Access to ${url} is disallowed by robots.txt`);
-                        return false;
-                    }
-                } else {
-                    // uhm assume we're blocked
-                    console.log(`Access to ${url} is disallowed by robots.txt`);
-                    return false;
-                }
-
+        const line = lines[i].trim();
+        if(line.startsWith("User-agent:")) {
+            const userAgent = line.split(":")[1].trim();
+            current = userAgent;
+            if(!rules.has(current)) {
+                rules.set(current, []);
+            }
+        } else if(line.startsWith("Disallow:") || line.startsWith("Allow:")) {
+            if(current === null) {
+                globalRules.push(line);
+            } else {
+                rules.get(current).push(line);
             }
         }
     }
+
+    for(const rule of [...(rules.get("*") || []), ...globalRules, ...(rules.get("noobsearch") || [])]) {
+        const [directive, value] = rule.split(":").map(s => s.trim());
+        if(directive === "Disallow") {
+            if(value === path) {
+                return false;
+            }
+        }
+    }
+
     return true;
 }

@@ -1,15 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import SearchPage from './pages/SearchPage';
+import StatisticsPage from './pages/StatisticsPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <SearchPage />
+      <Routes>
+        <Route path="/" element={<SearchPage />} />
+        <Route path="/statistics" element={<StatisticsPage />} />
+      </Routes>
     </BrowserRouter>
   </React.StrictMode>
 );

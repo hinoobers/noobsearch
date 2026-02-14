@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './SearchPage.css'
+import Navbar from '../components/Navbar';
 
 const SearchPage = () => {
     const [query, setQuery] = useState('');
@@ -27,6 +28,7 @@ const SearchPage = () => {
     }
     return (
         <div className='search'>
+            <Navbar />
             <h1>noobsearch</h1>
             <input autofocus type="text" placeholder="Search..." onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search(query)}></input>
             <button className="search-button" onClick={() => search(query)}>Search</button>

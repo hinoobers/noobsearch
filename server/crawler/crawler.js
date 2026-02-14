@@ -40,6 +40,7 @@ async function crawl(url, ttl, visited = new Set()) {
     }
     const analysis = await analyzePage(url);
     if(!analysis.ok) {
+        console.log("Failed to analyze", url, "error:", analysis.error);
         return;
     }
     if(visited.has(url)) {
@@ -59,12 +60,21 @@ async function crawl(url, ttl, visited = new Set()) {
 
     // Final step of adding to database, let's double check we have essential data
     if(!analysis.title || !analysis.description) {
+        console.log("Missing title or description for", url);
         return;
     }
 
     // Add to database
     // Data might already be there, in that case we need to update it
-    await pool.execute("INSERT INTO pages (url, title, description, keywords, last_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [url, analysis.title, analysis.description, JSON.stringify(analysis.keywords), new Date()]);
+    const urlObj = new URL(url);
+    const rootDomain = urlObj.hostname.split(".").slice(-2).join(".");
+    const path = urlObj.pathname;
+    let subdomain = urlObj.hostname.split(".").slice(0, -2).join(".");
+    if(subdomain.trim() === "") {
+        subdomain = null;
+    } 
+    await pool.execute("INSERT INTO pages (protocol, root_domain, subdomain, path, title, description, keywords, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [analysis.protocol, rootDomain, subdomain, path, analysis.title, analysis.description, JSON.stringify(analysis.keywords), new Date()]);
+    console.log("Added to db", rootDomain);
 }
 
 module.exports = { startCrawler, crawl };

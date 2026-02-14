@@ -15,9 +15,19 @@ async function analyzePage(url) {
     }
 
     // Links can have duplicates, or references to this page, so to avoid issues, let's filter
-    const uniqueLinks = [...new Set(pageContent.links)].filter(link => link !== url);
+    const uniqueLinks = [...new Set(pageContent.links)];
+    // limit to 50 sublinks, speeds up crawler
+    // first sort it by most distinctive words in links, so get a variety
+    uniqueLinks.sort((a, b) => {
+        const aParts = a.split("/").filter(part => part.length > 0);
+        const bParts = b.split("/").filter(part => part.length > 0);
+        const aScore = aParts.reduce((score, part) => score + (pageContent.keywords.includes(part) ? 1 : 0), 0);
+        const bScore = bParts.reduce((score, part) => score + (pageContent.keywords.includes(part) ? 1 : 0), 0);
+        return bScore - aScore;
+    })
+
     // For website description, we prefer meta description, OR from readable text, lets do like 100 characters
-    return {ok: true, sublinks: uniqueLinks, title: pageContent.title, description: pageContent.description, keywords: pageContent.keywords}
+    return {ok: true, sublinks: uniqueLinks.slice(0, 50), title: pageContent.title, description: pageContent.description, keywords: pageContent.keywords, protocol: url.includes("https") ? "https" : "http"}
 }
 
 module.exports = analyzePage;
