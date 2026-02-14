@@ -10,7 +10,8 @@ A Search engine architecture featuring a custom-built web crawler, a dedicated i
 
 ## 🚀 Overview
 
-NexusSearch isn't just a wrapper; it's a bottom-up implementation of search technology. It traverses the web via a seed list of domains, parses metadata, and utilizes a weighted search algorithm to deliver relevant results.
+my take on a search engine, it uses a predefined list of domains, crawls thru them, finds sublinks in HTML, then extracts everything to a MYSQL database for a user to search thru
+
 
 ### Core Components
 * **The Crawler:** An automated bot that visits domains listed in `domains.txt`.
