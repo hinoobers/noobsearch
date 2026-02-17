@@ -9,9 +9,11 @@ async function canReadPage(url) {
                 'User-Agent': 'noobsearch crawler'
             }
         });
+        console.log(response.status);
         if(response.status === 200 || response.status === 204) {
             return true;
         }
+        console.error(`Error accessing ${url}: Status code ${response.status}`);
         return false;
     } catch (error) {
         return false

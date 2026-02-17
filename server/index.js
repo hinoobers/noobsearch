@@ -77,7 +77,7 @@ app.post("/crawlsite", async (req, res) => {
 
     const canReadPAgeCache = await canReadPage(url);
     if(canReadPAgeCache === false) {
-        return res.status(403).json({ok: false, error: "Page is not there or cannot be accessed"});
+        return res.status(403).json({ok: false, error: "Page is not there or cannot be accessed (Can be SSL/Firewall, or some other issue, TL;DR the page doesn't like us)"});
     }
 
     const robotCache = await canRead(url);
