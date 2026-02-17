@@ -26,7 +26,7 @@ function startCrawler() {
             crawlingUrl = lines[(index + 1) % lines.length].trim();
         }
 
-        crawl(crawlingUrl, 3, false, visited).then(() => {
+        crawl(crawlingUrl, 3, false).then(() => {
             crawling = false;
         }).catch(() => {
             crawling = false;
@@ -73,6 +73,8 @@ async function crawl(url, ttl, user_added, visited = new Set()) {
     if(subdomain.trim() === "") {
         subdomain = null;
     } 
+
+    console.log("Parameters to add/update:", {protocol: analysis.protocol, rootDomain, subdomain, path, title: analysis.title, description: analysis.description, keywords: analysis.keywords, user_added});
     await pool.execute("INSERT INTO pages (protocol, root_domain, subdomain, path, title, description, keywords, user_added, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [analysis.protocol, rootDomain, subdomain ?? null, path, analysis.title, analysis.description, JSON.stringify(analysis.keywords), user_added, new Date()]);
 }
 
