@@ -1,6 +1,6 @@
 
-const canRead = require("./robotschecker");
-const fetchPageContent = require("./pagereader");
+const {canRead} = require("./robotschecker");
+const {fetchPageContent} = require("./pagereader");
 
 async function analyzePage(url) {
     const canAccess = await canRead(url);

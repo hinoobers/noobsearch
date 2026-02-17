@@ -5,6 +5,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import SearchPage from './pages/SearchPage';
 import StatisticsPage from './pages/StatisticsPage';
+import CrawlPage from './pages/CrawlPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -13,6 +14,7 @@ root.render(
       <Routes>
         <Route path="/" element={<SearchPage />} />
         <Route path="/statistics" element={<StatisticsPage />} />
+        <Route path="/crawl" element={<CrawlPage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

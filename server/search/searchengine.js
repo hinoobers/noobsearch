@@ -54,7 +54,7 @@ async function search(query) {
     const results = await pool.execute("SELECT protocol, root_domain, subdomain, path, title, description, keywords FROM pages");
 
     const grouped = new Map();
-    for (const row of results[0]) {
+    for (let row of results[0]) {
         const keywords = JSON.parse(row.keywords);
         const title = row.title || "";
 
@@ -79,8 +79,14 @@ async function search(query) {
         const isApex = row.path === "/" && row.subdomain === null;
 
         if (isApex) {
-            // Todo, apex domains need to be checked, broken atm
-            score += .5;
+            let match = 0;
+            for(const word of queryWords) {
+                match += compareStrings(word, row.root_domain);
+                if(match > .5) {
+                    match *= 4;
+                }
+            }
+            score += match;
         }
 
         if (score <= 0.1) continue;
@@ -95,7 +101,7 @@ async function search(query) {
                 title,
                 description: row.description,
                 score,
-                query
+                query,
             });
         }
     }

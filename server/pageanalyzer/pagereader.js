@@ -1,11 +1,28 @@
 const axios = require('axios');
 const { Parser } = require('htmlparser2');
 
+async function canReadPage(url) {
+    try {
+        const urlObj = new URL(url);
+        const response = await axios.get(urlObj, {
+            headers: {
+                'User-Agent': 'noobsearch crawler'
+            }
+        });
+        if(response.status === 200 || response.status === 204) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        return false
+    }
+}
+
 async function fetchPageContent(url) {
     try {
         const response = await axios.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                'User-Agent': 'noobsearch crawler'
             }
         });
         const html = response.data;
@@ -29,7 +46,7 @@ async function fetchPageContent(url) {
                                 const fullUrl = new URL(attributes.href, url);
                                 links.push(fullUrl.origin + fullUrl.pathname);
                             } catch (ignored) {
-                                
+
                             }
                         } else {
                             try {
@@ -82,10 +99,9 @@ async function fetchPageContent(url) {
 
         return { ok: true, content: html, title, description, links, keywords};
     } catch (error) {
-        console.log(error);
         console.error(`Error fetching ${url}:`, error.message);
         return { ok: false, error: error.message };
     }
 }
 
-module.exports = fetchPageContent;
+module.exports = {fetchPageContent, canReadPage};

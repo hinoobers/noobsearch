@@ -74,7 +74,6 @@ async function crawl(url, ttl, visited = new Set()) {
         subdomain = null;
     } 
     await pool.execute("INSERT INTO pages (protocol, root_domain, subdomain, path, title, description, keywords, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [analysis.protocol, rootDomain, subdomain, path, analysis.title, analysis.description, JSON.stringify(analysis.keywords), new Date()]);
-    console.log("Added to db", rootDomain);
 }
 
 module.exports = { startCrawler, crawl };

@@ -1,8 +1,13 @@
-module.exports = async function canRead(url) {
+let robotsCache = new Map();
+
+async function canRead(url) {
     // Usually robots.txt is at the root domain
     const rootDomain = new URL(url).origin;
     const robotsUrl = `${rootDomain}/robots.txt`;
 
+    if(robotsCache.has(url)) {
+        return robotsCache.get(url);
+    }
     // We need to check if there's a Disallow rule for the given url
     const response = await fetch(robotsUrl);
     if (!response.ok) {
@@ -38,10 +43,21 @@ module.exports = async function canRead(url) {
         const [directive, value] = rule.split(":").map(s => s.trim());
         if(directive === "Disallow") {
             if(value === path) {
+                robotsCache.set(url, false);
                 return false;
             }
         }
     }
 
+    robotsCache.set(url, true);
     return true;
 }
+
+async function getCache(url) {
+    if(robotsCache.has(url)) {
+        return robotsCache.get(url);
+    }
+    return null;
+}
+
+module.exports = {canRead, getCache}
