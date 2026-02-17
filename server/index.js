@@ -97,7 +97,7 @@ app.post("/crawlsite", async (req, res) => {
         return res.json({ok: true, message: "Site already indexed"});
     } else {
         res.json({ok: true, message: "Crawl request sent, it may take a few minutes for the site to be indexed."});
-        crawl(url, 3).then(() => {
+        crawl(url, 3, true).then(() => {
             // No reply, we alr sent
         }).catch(error => {
             console.error(error);

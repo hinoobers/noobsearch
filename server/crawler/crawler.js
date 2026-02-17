@@ -26,7 +26,7 @@ function startCrawler() {
             crawlingUrl = lines[(index + 1) % lines.length].trim();
         }
 
-        crawl(crawlingUrl, 3).then(() => {
+        crawl(crawlingUrl, 3, false, visited).then(() => {
             crawling = false;
         }).catch(() => {
             crawling = false;
@@ -34,7 +34,7 @@ function startCrawler() {
     }, 1000 * 10); // every 1 minute
 }
 
-async function crawl(url, ttl, visited = new Set()) {
+async function crawl(url, ttl, user_added, visited = new Set()) {
     if(ttl <= 0) {
         return;
     }
@@ -55,7 +55,7 @@ async function crawl(url, ttl, visited = new Set()) {
             continue;
         }
 
-        await crawl(sublink, ttl - 1, visited);
+        await crawl(sublink, ttl - 1, user_added, visited);
     }
 
     // Final step of adding to database, let's double check we have essential data
@@ -73,7 +73,7 @@ async function crawl(url, ttl, visited = new Set()) {
     if(subdomain.trim() === "") {
         subdomain = null;
     } 
-    await pool.execute("INSERT INTO pages (protocol, root_domain, subdomain, path, title, description, keywords, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [analysis.protocol, rootDomain, subdomain, path, analysis.title, analysis.description, JSON.stringify(analysis.keywords), new Date()]);
+    await pool.execute("INSERT INTO pages (protocol, root_domain, subdomain, path, title, description, keywords, user_added, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), keywords = VALUES(keywords), last_updated = VALUES(last_updated)", [analysis.protocol, rootDomain, subdomain, path, analysis.title, analysis.description, JSON.stringify(analysis.keywords), user_added, new Date()]);
 }
 
 module.exports = { startCrawler, crawl };
