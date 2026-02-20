@@ -8,6 +8,18 @@ const StatisticsPage = () => {
         const url = e.target[0].value;
         if(!url.trim()) return;
 
+        // Clientside validation to save server resources
+        fetch(url, { method: 'HEAD' }).then(res => {
+            if(!res.ok) {
+                alert("URL not reachable! ");
+                return;
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("Error when trying to reach the URL!");
+            return;
+        })
+
         fetch('http://localhost:3001/crawlsite', {
             method: 'POST',
             headers: {

@@ -36,8 +36,11 @@ const SearchPage = () => {
                 <h2>Results {time !== null && `(in ${time} ms)`}</h2>
                 {results.map((result, index) => (
                     <div key={index} className='result'>
-                        <img src={`https://www.google.com/s2/favicons?domain=${result.url}`} alt="favicon" className='favicon' />
-                        <a href={result.url} target="_blank" rel="noopener noreferrer">{result.title}</a>
+                        <div className='result-header'>
+                            <img src={`https://www.google.com/s2/favicons?domain=${result.url}`} alt="favicon" className='favicon' width={32} height={32} />
+                            <a href={result.url} target="_blank" rel="noopener noreferrer">{result.title}</a>
+                        </div>
+                        <p>{result.description}</p>
                     </div>
                 ))}
             </div>
